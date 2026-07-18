@@ -1,7 +1,25 @@
 import os
 import re
+import threading
+from http.server import SimpleHTTPRequestHandler
+from socketserver import TCPServer
 from telethon import TelegramClient, events
 from telethon.sessions import StringSession
+
+# --- DUMMY SERVER LOGIC IN BACKGROUND THREAD ---
+def run_dummy_server():
+    port = int(os.environ.get("PORT", 8080))
+    handler = SimpleHTTPRequestHandler
+    try:
+        with TCPServer(("", port), handler) as httpd:
+            print(f"Dummy web server started on port {port}")
+            httpd.serve_forever()
+    except Exception as e:
+        print(f"Dummy server error: {e}")
+
+# Start the dummy server immediately in a background thread
+server_thread = threading.Thread(target=run_dummy_server, daemon=True)
+server_thread.start()
 
 # --- CONFIGURATION ---
 API_ID = 30457846
