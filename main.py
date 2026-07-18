@@ -1,24 +1,7 @@
 import os
 import re
-import asyncio
 from telethon import TelegramClient, events
 from telethon.sessions import StringSession
-from http.server import SimpleHTTPRequestHandler
-from socketserver import TCPServer
-
-# --- DUMMY PORT FOR RENDER FORWARDER ---
-# Yeh Render ko chup rakhne ke liye hai taaki port scan timeout na aaye
-async def start_dummy_server():
-    port = int(os.environ.get("PORT", 8080))
-    handler = SimpleHTTPRequestHandler
-    try:
-        with TCPServer(("", port), handler) as httpd:
-            print(f"Dummy server running on port {port}")
-            while True:
-                httpd.handle_request()
-                await asyncio.sleep(1)
-    except Exception as e:
-        print(f"Dummy server error: {e}")
 
 # --- CONFIGURATION ---
 API_ID = 30457846
@@ -58,15 +41,7 @@ async def handler(event):
     except Exception as e:
         print(f"Error: {e}")
 
-async def main():
-    print("Userbot is starting...")
-    await client.start()
-    print("Userbot is running smoothly...")
-    # Dummy server aur bot dono ko sath me chalayenge
-    await asyncio.gather(
-        start_dummy_server(),
-        client.run_until_disconnected()
-    )
-
-if __name__ == '__main__':
-    asyncio.run(main())
+print("Userbot is starting...")
+client.start()
+print("Userbot is running smoothly...")
+client.run_until_disconnected()
