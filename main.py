@@ -1,8 +1,9 @@
 import os
 import re
-import threading
+import asyncio
 from http.server import SimpleHTTPRequestHandler
 from socketserver import TCPServer
+import threading
 from telethon import TelegramClient, events
 from telethon.sessions import StringSession
 
@@ -25,7 +26,8 @@ API_ID = 30457846
 API_HASH = '311a981ad11c95c88b1970d0be59f94d'
 STRING_SESSION = os.environ.get("STRING_SESSION")
 
-SOURCE_CHANNELS = ['offerlooters', -1001121334319, -1001639774576, -1004347972620]
+# Tumhari saari source channels ki IDs aur usernames
+SOURCE_CHANNELS = ['offerlooters', -1001121334319, -1001639774576, -1004347972620] 
 TARGET_CHANNEL = '@dealvaulthq'
 AMAZON_TAG = 'dealvaulthq-21'
 
@@ -33,11 +35,8 @@ AMAZON_TAG = 'dealvaulthq-21'
 def replace_affiliate_links(text):
     if not text:
         return text
-    
-    # Yeh pattern amazon, amzn.in, amzn.to, aur link.amazon sabhi ko pakad lega
     amazon_pattern = r'(https?://(?:www\.)?(?:amazon\.[a-z.]+|amzn\.[a-z.]+|link\.amazon\.[a-z.]+)(?:/[^\s]*)?)'
     amazon_links = re.findall(amazon_pattern, text)
-    
     for link in amazon_links:
         if 'tag=' in link:
             new_link = re.sub(r'tag=[^&]+', f'tag={AMAZON_TAG}', link)
@@ -47,23 +46,29 @@ def replace_affiliate_links(text):
         text = text.replace(link, new_link)
     return text
 
-# --- USERBOT LOGIC ---
-client = TelegramClient(StringSession(STRING_SESSION), API_ID, API_HASH)
+# --- USERBOT MAIN ASYNC RUNNER ---
+async def main():
+    print("Userbot script initializing...")
+    client = TelegramClient(StringSession(STRING_SESSION), API_ID, API_HASH)
+    
+    @client.on(events.NewMessage(chats=SOURCE_CHANNELS))
+    async def handler(event):
+        try:
+            print("Naya message detect hua!")
+            message_text = event.message.text or ""
+            updated_text = replace_affiliate_links(message_text)
+            if event.message.media:
+                await client.send_message(TARGET_CHANNEL, updated_text, file=event.message.media)
+            else:
+                await client.send_message(TARGET_CHANNEL, updated_text)
+            print("Message successfully forward ho gaya!")
+        except Exception as e:
+            print(f"Error handling message: {e}")
 
-@client.on(events.NewMessage(chats=SOURCE_CHANNELS))
-async def handler(event):
-    try:
-        message_text = event.message.text
-        updated_text = replace_affiliate_links(message_text)
-        if event.message.media:
-            await client.send_message(TARGET_CHANNEL, updated_text, file=event.message.media)
-        else:
-            await client.send_message(TARGET_CHANNEL, updated_text)
-        print("Deal successfully forward ho gayi!")
-    except Exception as e:
-        print(f"Error handling message: {e}")
+    print("Connecting to Telegram...")
+    await client.start()
+    print("Userbot is running smoothly inside loop...")
+    await client.run_until_disconnected()
 
-print("Userbot is starting...")
-client.start()
-print("Userbot is running smoothly...")
-client.run_until_disconnected()
+if __name__ == '__main__':
+    asyncio.run(main())
