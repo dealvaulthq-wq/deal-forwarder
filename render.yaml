@@ -1,0 +1,4 @@
+services:
+  - type: worker
+    name: deal-forwarder-bot
+    env: docker
