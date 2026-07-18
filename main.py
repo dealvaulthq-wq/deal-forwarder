@@ -17,7 +17,6 @@ def run_dummy_server():
     except Exception as e:
         print(f"Dummy server error: {e}")
 
-# Start the dummy server immediately in a background thread
 server_thread = threading.Thread(target=run_dummy_server, daemon=True)
 server_thread.start()
 
@@ -30,13 +29,15 @@ SOURCE_CHANNELS = ['offerlooters', -1001121334319, -1001639774576, 'testing_7787
 TARGET_CHANNEL = '@dealvaulthq'
 AMAZON_TAG = 'dealvaulthq-21'
 
-# --- USERBOT LOGIC ---
-client = TelegramClient(StringSession(STRING_SESSION), API_ID, API_HASH)
-
+# --- ADVANCED LINK REPLACER ---
 def replace_affiliate_links(text):
     if not text:
         return text
-    amazon_links = re.findall(r'(https?://(?:www\.)?amazon\.[a-z.]+(?:/[^\s]*)?)', text)
+    
+    # Yeh pattern amazon, amzn.in, amzn.to, aur link.amazon sabhi ko pakad lega
+    amazon_pattern = r'(https?://(?:www\.)?(?:amazon\.[a-z.]+|amzn\.[a-z.]+|link\.amazon\.[a-z.]+)(?:/[^\s]*)?)'
+    amazon_links = re.findall(amazon_pattern, text)
+    
     for link in amazon_links:
         if 'tag=' in link:
             new_link = re.sub(r'tag=[^&]+', f'tag={AMAZON_TAG}', link)
@@ -45,6 +46,9 @@ def replace_affiliate_links(text):
             new_link = f"{link}{connector}tag={AMAZON_TAG}"
         text = text.replace(link, new_link)
     return text
+
+# --- USERBOT LOGIC ---
+client = TelegramClient(StringSession(STRING_SESSION), API_ID, API_HASH)
 
 @client.on(events.NewMessage(chats=SOURCE_CHANNELS))
 async def handler(event):
@@ -55,9 +59,9 @@ async def handler(event):
             await client.send_message(TARGET_CHANNEL, updated_text, file=event.message.media)
         else:
             await client.send_message(TARGET_CHANNEL, updated_text)
-        print("Deal successfully copied and link replaced!")
+        print("Deal successfully forward ho gayi!")
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"Error handling message: {e}")
 
 print("Userbot is starting...")
 client.start()
