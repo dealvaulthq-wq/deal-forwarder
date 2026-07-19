@@ -6,7 +6,7 @@ import sys
 from http.server import SimpleHTTPRequestHandler
 from socketserver import TCPServer
 import threading
-from telethon import TelegramClient, events
+from telethon import TelegramClient, events, types
 from telethon.sessions import StringSession
 
 # Forced flush aur clear logging taaki Render pe dikhe hi dikhe
@@ -82,7 +82,8 @@ async def main():
                     message_text = event.message.text or ""
                     updated_text = replace_affiliate_links(message_text)
                     
-                    if event.message.media:
+                    # FIX: Sirf tabhi file bhejo agar media WebPage nahi hai
+                    if event.message.media and not isinstance(event.message.media, types.MessageMediaWebPage):
                         await client.send_message(TARGET_CHANNEL, updated_text, file=event.message.media)
                     else:
                         await client.send_message(TARGET_CHANNEL, updated_text)
