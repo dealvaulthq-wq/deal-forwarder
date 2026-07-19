@@ -5,6 +5,7 @@ import logging
 import sys
 import requests
 import threading
+from collections import deque
 from http.server import SimpleHTTPRequestHandler
 from socketserver import TCPServer
 from telethon import TelegramClient, events, types
@@ -18,11 +19,11 @@ CUELINKS_API_KEY = os.environ.get("CUELINKS_API_KEY", "").strip()
 
 # Total 5 Source Channels (3 Normal + 2 Lallantop Restricted Channels)
 SOURCE_CHANNELS = [
-    -1001121334319,  # Normal Channel 1
-    -1001639774576,  # Normal Channel 2
-    -1004347972620,  # Normal Channel 3 (Testing etc.)
-    -1002226389011,  # Lallantop Restricted Channel 1
-    -1002110119819   # Lallantop Restricted Channel 2
+    -1001121334319,
+    -1001639774576,
+    -1004347972620,
+    -1002226389011,
+    -1002110119819
 ]
 
 # In 2 channels se sirf "Loot" likha hone par hi message aayega
@@ -33,6 +34,12 @@ LOOT_RESTRICTED_CHANNELS = [
 
 TARGET_CHANNEL = -1004401616132
 AMAZON_TAG = 'dealvaulthq-21'
+
+# Har message ke aakhir mein judne wala Footer / Watermark
+WATERMARK_TEXT = "\n\n━━━━━━━━━━━━━\n🚀 **Join Deal Vault HQ for More Loot Deals!**"
+
+# Duplicate filter ke liye memory (pichli 100 unique links ko yaad rakhega)
+recent_deals = deque(maxlen=100)
 
 # --- LOGGING & SERVER ---
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', handlers=[logging.StreamHandler(sys.stdout)])
@@ -68,6 +75,7 @@ def process_text(text):
     matches = list(re.finditer(link_pattern, text, re.IGNORECASE))
     updated_text = text
     found_valid_link = False
+    first_link_clean = None
     
     for match in matches:
         full_link = match.group(0)
@@ -76,14 +84,31 @@ def process_text(text):
         if any(d in domain for d in allowed_domains):
             found_valid_link = True
             if "amazon" in domain or "amzn" in domain:
+                # Amazon ke extra tracking parameters hata kar clean base link bana lo duplicate check ke liye
                 new_link = full_link.split('?')[0] + f"?tag={AMAZON_TAG}"
             else:
                 new_link = get_cuelinks_url(full_link)
+            
+            if not first_link_clean:
+                first_link_clean = new_link.split('?')[0]  # Base product link for duplicate checking
+                
             updated_text = updated_text.replace(full_link, new_link)
         else:
             updated_text = updated_text.replace(full_link, "")
             
-    return updated_text if found_valid_link else None
+    if found_valid_link:
+        # Duplicate check: Agar yehi product link abhi thodi der pehle aa chuka hai, toh reject kar do
+        if first_link_clean in recent_deals:
+            logger.info("⚠️ Duplicate deal detected, skipped!")
+            return None
+        
+        # Naya link hai toh memory mein save kar lo
+        recent_deals.append(first_link_clean)
+        
+        updated_text = updated_text.strip() + WATERMARK_TEXT
+        return updated_text
+        
+    return None
 
 async def main():
     client = TelegramClient(StringSession(STRING_SESSION), API_ID, API_HASH)
@@ -93,10 +118,9 @@ async def main():
         if event.chat_id in SOURCE_CHANNELS:
             text = event.message.text or ""
             
-            # Agar message un 2 Lallantop channels se hai, toh check karo ki "loot" word hai ya nahi
             if event.chat_id in LOOT_RESTRICTED_CHANNELS:
                 if "loot" not in text.lower():
-                    return  # Agar "loot" nahi hai, toh message drop kar do
+                    return  # "loot" nahi hone par drop kar do
 
             updated_text = process_text(text)
             
@@ -105,7 +129,7 @@ async def main():
                     await client.send_message(TARGET_CHANNEL, updated_text, file=event.message.media, link_preview=False)
                 else:
                     await client.send_message(TARGET_CHANNEL, updated_text, link_preview=False)
-                logger.info("✅ Deal forwarded successfully from 5 channels setup!")
+                logger.info("✅ Unique deal forwarded successfully!")
 
     await client.start()
     await client.run_until_disconnected()
