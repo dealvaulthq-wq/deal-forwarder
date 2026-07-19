@@ -99,7 +99,7 @@ def clean_and_format_text(text):
     return cleaned.strip() + "\n\n" + final_tags
 
 def process_deal(text):
-    allowed_domains = ['amazon', 'amzn', 'link.amazon', 'flipkart', 'fkrt.cc', 'myntra', 'ajio', 'shopsy']
+    allowed_domains = ['amazon', 'amzn', 'link.amazon', 'flipkart', 'fkrt.cc', 'myntra', 'myntr.it','ajiio.in','ajio', 'shopsy']
     link_pattern = r'https?://(?:www\.)?([a-zA-Z0-9.-]+)(?:/[^\s]*)?'
     
     matches = list(re.finditer(link_pattern, text, re.IGNORECASE))
