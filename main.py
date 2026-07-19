@@ -17,7 +17,6 @@ API_HASH = '311a981ad11c95c88b1970d0be59f94d'
 STRING_SESSION = os.environ.get("STRING_SESSION", "").strip()
 CUELINKS_API_KEY = os.environ.get("CUELINKS_API_KEY", "").strip()
 
-# Total 5 Source Channels (3 Normal + 2 Lallantop Restricted Channels)
 SOURCE_CHANNELS = [
     -1001121334319,
     -1001639774576,
@@ -26,7 +25,6 @@ SOURCE_CHANNELS = [
     -1002110119819
 ]
 
-# In 2 channels se sirf "Loot" likha hone par hi message aayega
 LOOT_RESTRICTED_CHANNELS = [
     -1002226389011,
     -1002110119819
@@ -35,10 +33,8 @@ LOOT_RESTRICTED_CHANNELS = [
 TARGET_CHANNEL = -1004401616132
 AMAZON_TAG = 'dealvaulthq-21'
 
-# Har message ke aakhir mein judne wala Footer / Watermark
 WATERMARK_TEXT = "\n\n━━━━━━━━━━━━━\n🚀 **Join Deal Vault HQ for More Loot Deals!**"
 
-# Duplicate filter memory & Bot Status Variables
 recent_deals = deque(maxlen=100)
 bot_paused = False
 total_forwarded_count = 0
@@ -71,35 +67,30 @@ def get_cuelinks_url(url):
         return url
 
 def clean_and_format_text(text):
-    # Faltu ke ajeeb symbols ya repeated lines saaf karna
     cleaned = re.sub(r'[═▀▄█▬]{3,}', '', text)
     cleaned = re.sub(r'\n{3,}', '\n\n', cleaned)
     
-    # Auto-Tagging: Strict max 3 tags limit (No fixed channel tag)
+    # Sirf product ke hisab se exact 1 ya 2 relevant tags (No BestBuy, No DealVaultHQ)
     tags_list = []
     lower_txt = text.lower()
     
-    if any(w in lower_txt for w in ['shoe', 'sneaker', 'nike', 'puma', 'adidas', 'clothing', 'shirt', 'jean', 'tshirt']):
-        tags_list.append("#Fashion")
-    elif any(w in lower_txt for w in ['phone', 'mobile', 'earbud', 'headphone', 'watch', 'smartwatch', 'laptop', 'charger', 'cable']):
+    if any(w in lower_txt for w in ['shoe', 'sneaker', 'nike', 'puma', 'adidas', 'clothing', 'shirt', 'jean', 'tshirt', 'facewash', 'skin', 'beauty', 'cream']):
+        tags_list.append("#FashionBeauty")
+    if any(w in lower_txt for w in ['phone', 'mobile', 'earbud', 'headphone', 'watch', 'smartwatch', 'laptop', 'charger', 'cable']):
         tags_list.append("#Electronics")
-    elif any(w in lower_txt for w in ['kitchen', 'home', 'bulb', 'bottle', 'bedsheet', 'pillow', 'cleaner']):
+    if any(w in lower_txt for w in ['kitchen', 'home', 'bulb', 'bottle', 'bedsheet', 'pillow', 'cleaner']):
         tags_list.append("#HomeNeeds")
-        
-    if any(w in lower_txt for w in ['loot', 'glitch', 'offer', 'sale', 'lowest', 'free', '99', '49']):
+    if any(w in lower_txt for w in ['loot', 'glitch', 'error', '99', '49']):
         tags_list.append("#LootDeals")
         
-    # Default tags taaki kam se kam 2-3 tags hamesha rahein
-    tags_list.append("#BestBuy")
-    tags_list.append("#DealVaultHQ")
-        
-    # Unique karke maximum exact 3 tags lena
-    final_tags = " ".join(list(dict.fromkeys(tags_list))[:3])
+    final_tags = " ".join(list(dict.fromkeys(tags_list))[:2])
     
-    return cleaned.strip() + "\n\n" + final_tags
+    if final_tags:
+        return cleaned.strip() + "\n\n" + final_tags
+    return cleaned.strip()
 
 def process_deal(text):
-    allowed_domains = ['amazon', 'amzn', 'link.amazon', 'flipkart', 'fkrt.cc', 'myntra', 'myntr.it','ajiio.in','ajio', 'shopsy']
+    allowed_domains = ['amazon', 'amzn', 'link.amazon', 'flipkart', 'fkrt.cc', 'myntra', 'myntr. it', 'ajiio. in', 'ajio', 'shopsy']
     link_pattern = r'https?://(?:www\.)?([a-zA-Z0-9.-]+)(?:/[^\s]*)?'
     
     matches = list(re.finditer(link_pattern, text, re.IGNORECASE))
@@ -132,12 +123,11 @@ def process_deal(text):
         
         recent_deals.append(first_link_clean)
         
-        # Clean text & apply max 3 smart hashtags
         formatted_text = clean_and_format_text(updated_text)
         
-        # Dynamic Header Banner Injection
-        header_banner = "🔥 **MASSIVE LOOT DEAL / PRICE DROP!**\n━━━━━━━━━━━━━\n"
-        if any(k in text.lower() for k in ["lowest", "free", "error", "glitch", "99", "49", "loot"]):
+        # Bada banner sirf tabhi aayega jab asli mein koi special glitch/lowest loot ho
+        header_banner = ""
+        if any(k in text.lower() for k in ["lowest", "free", "error", "glitch", "99", "49"]):
             header_banner = "🚨 **CRAZY GLITCH / LOWEST PRICE ALERT!**\n━━━━━━━━━━━━━\n"
             
         final_output = header_banner + formatted_text + WATERMARK_TEXT
@@ -152,20 +142,19 @@ async def main():
     async def handler(event):
         global bot_paused, total_forwarded_count
         
-        # Admin Control Commands Handling (/pause, /resume, /stats)
         if event.is_private or event.chat_id == TARGET_CHANNEL:
             msg_text = event.message.text or ""
             if msg_text.lower() == "/pause":
                 bot_paused = True
-                await event.respond("⏸️ **Deal Vault Bot is now PAUSED.** No deals will be forwarded.")
+                await event.respond("⏸️ **Deal Vault Bot is now PAUSED.**")
                 return
             elif msg_text.lower() == "/resume":
                 bot_paused = False
-                await event.respond("▶️ **Deal Vault Bot is now RESUMED.** Forwarding active!")
+                await event.respond("▶️ **Deal Vault Bot is now RESUMED.**")
                 return
             elif msg_text.lower() == "/stats":
                 status = "PAUSED ⏸️" if bot_paused else "RUNNING 🟢"
-                await event.respond(f"📊 **Bot Status Report:**\n- Status: {status}\n- Total Deals Forwarded: {total_forwarded_count}\n- Active Source Channels: {len(SOURCE_CHANNELS)}")
+                await event.respond(f"📊 **Status:** {status}\n- Total Forwarded: {total_forwarded_count}")
                 return
 
         if bot_paused:
@@ -187,7 +176,7 @@ async def main():
                     await client.send_message(TARGET_CHANNEL, final_text, link_preview=False)
                 
                 total_forwarded_count += 1
-                logger.info(f"✅ Clean deal forwarded with 3 hashtags! Total: {total_forwarded_count}")
+                logger.info(f"✅ Clean deal posted! Total: {total_forwarded_count}")
 
     await client.start()
     await client.run_until_disconnected()
