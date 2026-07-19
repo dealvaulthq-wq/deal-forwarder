@@ -33,7 +33,8 @@ LOOT_RESTRICTED_CHANNELS = [
 TARGET_CHANNEL = -1004401616132
 AMAZON_TAG = 'dealvaulthq-21'
 
-WATERMARK_TEXT = "\n\n━━━━━━━━━━━━━\n🚀 **Join Deal Vault HQ for More Loot Deals!**"
+# Option 1: Ekdum short, clean aur professional watermark
+WATERMARK_TEXT = "\n\n━━━━━━━━━━━━━\n⚡ @DealVaultHQ"
 
 recent_deals = deque(maxlen=100)
 bot_paused = False
@@ -70,7 +71,6 @@ def clean_and_format_text(text):
     cleaned = re.sub(r'[═▀▄█▬]{3,}', '', text)
     cleaned = re.sub(r'\n{3,}', '\n\n', cleaned)
     
-    # Sirf product ke hisab se exact 1 ya 2 relevant tags (No BestBuy, No DealVaultHQ)
     tags_list = []
     lower_txt = text.lower()
     
@@ -90,7 +90,7 @@ def clean_and_format_text(text):
     return cleaned.strip()
 
 def process_deal(text):
-    allowed_domains = ['amazon', 'amzn', 'link.amazon', 'flipkart', 'fkrt.cc', 'myntra', 'myntr.it', 'ajiio. in', 'ajio', 'shopsy']
+    allowed_domains = ['amazon', 'amzn', 'link.amazon', 'flipkart', 'fkrt.cc', 'myntra', 'ajio', 'shopsy']
     link_pattern = r'https?://(?:www\.)?([a-zA-Z0-9.-]+)(?:/[^\s]*)?'
     
     matches = list(re.finditer(link_pattern, text, re.IGNORECASE))
@@ -125,9 +125,8 @@ def process_deal(text):
         
         formatted_text = clean_and_format_text(updated_text)
         
-        # Bada banner sirf tabhi aayega jab asli mein koi special glitch/lowest loot ho
         header_banner = ""
-        if any(k in text.lower() for k in ["lowest", "free", "error", "glitch", "99", "49"]):
+        if any(k in text.lower() for k in ["lowest", "free", "error", "glitch", "99", "49", "loot"]):
             header_banner = "🚨 **CRAZY GLITCH / LOWEST PRICE ALERT!**\n━━━━━━━━━━━━━\n"
             
         final_output = header_banner + formatted_text + WATERMARK_TEXT
