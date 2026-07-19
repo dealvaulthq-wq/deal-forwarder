@@ -69,7 +69,7 @@ def get_cuelinks_url(url):
         return url
 
 def process_text(text):
-    allowed_domains = ['amazon', 'amzn', 'link.amazon', 'flipkart', 'fkrt.cc', 'myntra', 'ajio', 'shopsy']
+    allowed_domains = ['amazon', 'amzn', 'link.amazon', 'flipkart', 'fkrt.cc', 'myntra', 'myntr.it', 'ajiio.in', 'ajio', 'shopsy']
     link_pattern = r'https?://(?:www\.)?([a-zA-Z0-9.-]+)(?:/[^\s]*)?'
     
     matches = list(re.finditer(link_pattern, text, re.IGNORECASE))
