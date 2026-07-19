@@ -16,7 +16,21 @@ API_HASH = '311a981ad11c95c88b1970d0be59f94d'
 STRING_SESSION = os.environ.get("STRING_SESSION", "").strip()
 CUELINKS_API_KEY = os.environ.get("CUELINKS_API_KEY", "").strip()
 
-SOURCE_CHANNELS = [-1001121334319, -1001639774576, -1004347972620]
+# Total 5 Source Channels (3 Normal + 2 Lallantop Restricted Channels)
+SOURCE_CHANNELS = [
+    -1001121334319,  # Normal Channel 1
+    -1001639774576,  # Normal Channel 2
+    -1004347972620,  # Normal Channel 3 (Testing etc.)
+    -1002226389011,  # Lallantop Restricted Channel 1
+    -1002110119819   # Lallantop Restricted Channel 2
+]
+
+# In 2 channels se sirf "Loot" likha hone par hi message aayega
+LOOT_RESTRICTED_CHANNELS = [
+    -1002226389011,
+    -1002110119819
+] 
+
 TARGET_CHANNEL = -1004401616132
 AMAZON_TAG = 'dealvaulthq-21'
 
@@ -48,8 +62,7 @@ def get_cuelinks_url(url):
         return url
 
 def process_text(text):
-    # Sirf inhi shopping platforms ke links allow hain
-    allowed_domains = ['amazon', 'amzn', 'link.amazon', 'flipkart', 'fkrt.cc', 'myntra', 'myntr.it','ajiio','ajio', 'shopsy']
+    allowed_domains = ['amazon', 'amzn', 'link.amazon', 'flipkart', 'fkrt.cc', 'myntra', 'ajio', 'shopsy']
     link_pattern = r'https?://(?:www\.)?([a-zA-Z0-9.-]+)(?:/[^\s]*)?'
     
     matches = list(re.finditer(link_pattern, text, re.IGNORECASE))
@@ -68,7 +81,6 @@ def process_text(text):
                 new_link = get_cuelinks_url(full_link)
             updated_text = updated_text.replace(full_link, new_link)
         else:
-            # Faltu ya dusre links ko hata do
             updated_text = updated_text.replace(full_link, "")
             
     return updated_text if found_valid_link else None
@@ -80,6 +92,12 @@ async def main():
     async def handler(event):
         if event.chat_id in SOURCE_CHANNELS:
             text = event.message.text or ""
+            
+            # Agar message un 2 Lallantop channels se hai, toh check karo ki "loot" word hai ya nahi
+            if event.chat_id in LOOT_RESTRICTED_CHANNELS:
+                if "loot" not in text.lower():
+                    return  # Agar "loot" nahi hai, toh message drop kar do
+
             updated_text = process_text(text)
             
             if updated_text:
@@ -87,7 +105,7 @@ async def main():
                     await client.send_message(TARGET_CHANNEL, updated_text, file=event.message.media, link_preview=False)
                 else:
                     await client.send_message(TARGET_CHANNEL, updated_text, link_preview=False)
-                logger.info("✅ Deal forwarded successfully!")
+                logger.info("✅ Deal forwarded successfully from 5 channels setup!")
 
     await client.start()
     await client.run_until_disconnected()
