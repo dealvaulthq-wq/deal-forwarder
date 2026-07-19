@@ -49,7 +49,7 @@ def get_cuelinks_url(url):
 
 def process_text(text):
     # Sirf inhi shopping platforms ke links allow hain
-    allowed_domains = ['amazon', 'amzn', 'link.amazon', 'flipkart', 'fkrt.cc', 'myntra', 'ajio', 'shopsy']
+    allowed_domains = ['amazon', 'amzn', 'link.amazon', 'flipkart', 'fkrt.cc', 'myntra', 'myntr.it','ajiio','ajio', 'shopsy']
     link_pattern = r'https?://(?:www\.)?([a-zA-Z0-9.-]+)(?:/[^\s]*)?'
     
     matches = list(re.finditer(link_pattern, text, re.IGNORECASE))
