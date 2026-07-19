@@ -9,7 +9,7 @@ import threading
 from telethon import TelegramClient, events, types
 from telethon.sessions import StringSession
 
-# Forced flush aur clear logging taaki Render pe dikhe hi dikhe
+# Logging setup
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
@@ -37,7 +37,8 @@ API_HASH = '311a981ad11c95c88b1970d0be59f94d'
 STRING_SESSION = os.environ.get("STRING_SESSION", "").strip()
 
 SOURCE_CHANNELS = ['offerlooters', -1001121334319, -1001639774576, -1004347972620] 
-TARGET_CHANNEL = '@dealvaulthq'
+# Yahan tumhari di gayi ID update kar di hai
+TARGET_CHANNEL = -1004401616132
 AMAZON_TAG = 'dealvaulthq-21'
 
 def replace_affiliate_links(text):
@@ -55,14 +56,13 @@ def replace_affiliate_links(text):
     return text
 
 async def main():
-    logger.info("🚀 Userbot initializing main function...")
+    logger.info("🚀 Userbot initializing...")
     
     if not STRING_SESSION:
-        logger.error("❌ STRING_SESSION environment variable missing or empty!")
+        logger.error("❌ STRING_SESSION environment variable missing!")
         return
 
     try:
-        logger.info("🔄 Connecting to Telegram using StringSession...")
         client = TelegramClient(StringSession(STRING_SESSION), API_ID, API_HASH)
         
         @client.on(events.NewMessage())
@@ -78,28 +78,27 @@ async def main():
                     is_source = True
 
                 if is_source:
-                    logger.info(f"📥 Message intercepted from source: {chat_id}")
+                    logger.info(f"📥 Message intercepted from: {chat_id}")
                     message_text = event.message.text or ""
                     updated_text = replace_affiliate_links(message_text)
                     
-                    # FIX: Sirf tabhi file bhejo agar media WebPage nahi hai
                     if event.message.media and not isinstance(event.message.media, types.MessageMediaWebPage):
                         await client.send_message(TARGET_CHANNEL, updated_text, file=event.message.media)
                     else:
                         await client.send_message(TARGET_CHANNEL, updated_text)
-                    logger.info("✅ Deal successfully forwarded!")
+                    logger.info("✅ Deal forwarded!")
             except Exception as handler_err:
-                logger.error(f"❌ Error inside handler: {handler_err}")
+                logger.error(f"❌ Error: {handler_err}")
 
         await client.start()
-        logger.info("🎯 USERBOT IS FULLY RUNNING AND CONNECTED!")
+        logger.info("🎯 USERBOT RUNNING!")
         await client.run_until_disconnected()
         
     except Exception as client_err:
-        logger.error(f"❌ Critical error in Telegram Client: {client_err}")
+        logger.error(f"❌ Critical error: {client_err}")
 
 if __name__ == '__main__':
     try:
         asyncio.run(main())
     except Exception as main_err:
-        logger.error(f"❌ Asyncio loop crashed: {main_err}")
+        logger.error(f"❌ Loop crashed: {main_err}")
