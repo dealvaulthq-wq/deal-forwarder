@@ -119,7 +119,7 @@ def process_deal(text):
         # Specific banner for ₹1 deals vs Glitch deals
         if "rs. 1" in lower_text or "rs 1" in lower_text or "₹1" in text or "1 rupe" in lower_text:
             header_banner = "🔥 **MEGA ₹1 STORE / 1 RUPEE DEAL!** 🔥\n━━━━━━━━━━━━━\n"
-        elif any(k in lower_text for k in ["lowest", "free", "error", "glitch", "99", "49", "loot"]):
+        elif any(k in lower_text for k in ["lowest", "free", "error", "glitch", "49", "loot, "LOOT"]):
             header_banner = "🚨 **CRAZY GLITCH / LOWEST PRICE ALERT!**\n━━━━━━━━━━━━━\n"
             
         final_output = header_banner + formatted_text + WATERMARK_TEXT
