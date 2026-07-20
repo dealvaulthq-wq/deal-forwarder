@@ -39,7 +39,7 @@ total_forwarded_count = 0
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', handlers=[logging.StreamHandler(sys.stdout)])
 logger = logging.getLogger(__name__)
 
-# --- STABLE KEEP-ALIVE SERVER FOR RENDER & UPTIMEROBOT ---
+# --- INDEPENDENT HTTP SERVER FOR RENDER & UPTIMEROBOT ---
 class SimpleHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
@@ -51,12 +51,13 @@ class SimpleHandler(BaseHTTPRequestHandler):
 def run_dummy_server():
     port = int(os.environ.get("PORT", 10000))
     server = HTTPServer(("0.0.0.0", port), SimpleHandler)
-    logger.info(f"🟢 Server running on port {port}")
+    logger.info(f"🟢 Keep-alive HTTP Server running on port {port}")
     server.serve_forever()
 
+# Start server immediately in background thread before anything else
 threading.Thread(target=run_dummy_server, daemon=True).start()
 
-# --- LOGIC (AMAZON ONLY - NO ERRORS) ---
+# --- LOGIC ---
 def clean_and_format_text(text):
     cleaned = re.sub(r'[═▀▄█▬]{3,}', '', text)
     cleaned = re.sub(r'\n{3,}', '\n\n', cleaned)
