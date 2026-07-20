@@ -6,8 +6,7 @@ import sys
 import requests
 import threading
 from collections import deque
-from http.server import SimpleHTTPRequestHandler
-from socketserver import TCPServer
+from http.server import HTTPServer, BaseHTTPRequestHandler
 from telethon import TelegramClient, events, types
 from telethon.sessions import StringSession
 
@@ -32,23 +31,30 @@ LOOT_RESTRICTED_CHANNELS = [
 
 TARGET_CHANNEL = -1004401616132
 AMAZON_TAG = 'dealvaulthq-21'
-
-# Option 1: Ekdum short, clean aur professional watermark
 WATERMARK_TEXT = "\n\n━━━━━━━━━━━━━\n⚡ @DealVaultHQ"
 
 recent_deals = deque(maxlen=100)
 bot_paused = False
 total_forwarded_count = 0
 
-# --- LOGGING & SERVER ---
+# --- LOGGING ---
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', handlers=[logging.StreamHandler(sys.stdout)])
 logger = logging.getLogger(__name__)
 
+# --- STABLE KEEP-ALIVE SERVER FOR RENDER & UPTIMEROBOT ---
+class SimpleHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b"Bot is active and running!")
+    def log_message(self, format, *args):
+        pass
+
 def run_dummy_server():
     port = int(os.environ.get("PORT", 10000))
-    with TCPServer(("", port), SimpleHTTPRequestHandler) as httpd:
-        logger.info(f"🟢 Server running on port {port}")
-        httpd.serve_forever()
+    server = HTTPServer(("0.0.0.0", port), SimpleHandler)
+    logger.info(f"🟢 Server running on port {port}")
+    server.serve_forever()
 
 threading.Thread(target=run_dummy_server, daemon=True).start()
 
@@ -90,7 +96,7 @@ def clean_and_format_text(text):
     return cleaned.strip()
 
 def process_deal(text):
-    allowed_domains = ['amazon', 'amzn', 'link.amazon', 'flipkart', 'fkrt.cc', 'myntra', 'myntr.it','ajiio.in', 'ajio', 'shopsy']
+    allowed_domains = ['amazon', 'amzn', 'link.amazon', 'flipkart', 'fkrt.cc', 'myntra', 'ajio', 'shopsy']
     link_pattern = r'https?://(?:www\.)?([a-zA-Z0-9.-]+)(?:/[^\s]*)?'
     
     matches = list(re.finditer(link_pattern, text, re.IGNORECASE))
