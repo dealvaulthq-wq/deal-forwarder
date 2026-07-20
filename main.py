@@ -3,7 +3,6 @@ import re
 import asyncio
 import logging
 import sys
-import requests
 import threading
 from collections import deque
 from http.server import HTTPServer, BaseHTTPRequestHandler
@@ -14,7 +13,6 @@ from telethon.sessions import StringSession
 API_ID = 30457846
 API_HASH = '311a981ad11c95c88b1970d0be59f94d'
 STRING_SESSION = os.environ.get("STRING_SESSION", "").strip()
-CUELINKS_API_KEY = os.environ.get("CUELINKS_API_KEY", "").strip()
 
 SOURCE_CHANNELS = [
     -1001121334319,
@@ -58,21 +56,7 @@ def run_dummy_server():
 
 threading.Thread(target=run_dummy_server, daemon=True).start()
 
-# --- LOGIC ---
-def get_cuelinks_url(url):
-    try:
-        response = requests.post(
-            "https://api.cuelinks.com/v3/links",
-            headers={"Authorization": f"Bearer {CUELINKS_API_KEY}", "Content-Type": "application/json"},
-            json={"url": url, "format": "json"},
-            timeout=5
-        )
-        data = response.json()
-        return data.get('url', url)
-    except Exception as e:
-        logger.error(f"Cuelinks API Error: {e}")
-        return url
-
+# --- LOGIC (AMAZON ONLY - NO ERRORS) ---
 def clean_and_format_text(text):
     cleaned = re.sub(r'[═▀▄█▬]{3,}', '', text)
     cleaned = re.sub(r'\n{3,}', '\n\n', cleaned)
@@ -96,7 +80,7 @@ def clean_and_format_text(text):
     return cleaned.strip()
 
 def process_deal(text):
-    allowed_domains = ['amazon', 'amzn', 'link.amazon', 'flipkart', 'fkrt.cc', 'myntra', 'ajio', 'shopsy']
+    allowed_domains = ['amazon', 'amzn', 'link.amazon']
     link_pattern = r'https?://(?:www\.)?([a-zA-Z0-9.-]+)(?:/[^\s]*)?'
     
     matches = list(re.finditer(link_pattern, text, re.IGNORECASE))
@@ -110,10 +94,7 @@ def process_deal(text):
         
         if any(d in domain for d in allowed_domains):
             found_valid_link = True
-            if "amazon" in domain or "amzn" in domain:
-                new_link = full_link.split('?')[0] + f"?tag={AMAZON_TAG}"
-            else:
-                new_link = get_cuelinks_url(full_link)
+            new_link = full_link.split('?')[0] + f"?tag={AMAZON_TAG}"
             
             if not first_link_clean:
                 first_link_clean = new_link.split('?')[0]
@@ -181,7 +162,7 @@ async def main():
                     await client.send_message(TARGET_CHANNEL, final_text, link_preview=False)
                 
                 total_forwarded_count += 1
-                logger.info(f"✅ Clean deal posted! Total: {total_forwarded_count}")
+                logger.info(f"✅ Clean Amazon deal posted! Total: {total_forwarded_count}")
 
     await client.start()
     await client.run_until_disconnected()
