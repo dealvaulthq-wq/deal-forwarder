@@ -71,7 +71,7 @@ def clean_and_format_text(text):
         tags_list.append("#Electronics")
     if any(w in lower_txt for w in ['kitchen', 'home', 'bulb', 'bottle', 'bedsheet', 'pillow', 'cleaner']):
         tags_list.append("#HomeNeeds")
-    if any(w in lower_txt for w in ['loot', 'glitch', 'error', '99', '49', '1']):
+    if any(w in lower_txt for w in ['loot', 'glitch', 'error', '99', '49', '1', 'grab']):
         tags_list.append("#LootDeals")
         
     final_tags = " ".join(list(dict.fromkeys(tags_list))[:2])
@@ -116,10 +116,10 @@ def process_deal(text):
         lower_text = text.lower()
         header_banner = ""
         
-        # Specific banner for ₹1 deals vs Glitch deals
+        # Specific banner for ₹1 deals vs Glitch deals (including 'grab')
         if "rs. 1" in lower_text or "rs 1" in lower_text or "₹1" in text or "1 rupe" in lower_text:
             header_banner = "🔥 **MEGA ₹1 STORE / 1 RUPEE DEAL!** 🔥\n━━━━━━━━━━━━━\n"
-        elif any(k in lower_text for k in ["lowest", "free", "error", "glitch", "49", "loot, "LOOT"]):
+        elif any(k in lower_text for k in ["lowest", "free", "error", "glitch", "49", "loot", "grab"]):
             header_banner = "🚨 **CRAZY GLITCH / LOWEST PRICE ALERT!**\n━━━━━━━━━━━━━\n"
             
         final_output = header_banner + formatted_text + WATERMARK_TEXT
