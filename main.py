@@ -6,6 +6,7 @@ import sys
 import threading
 from collections import deque
 from http.server import HTTPServer, BaseHTTPRequestHandler
+from urllib.parse import urlparse
 from telethon import TelegramClient, events, types
 from telethon.sessions import StringSession
 
@@ -82,7 +83,9 @@ def clean_and_format_text(text):
 
 def process_deal(text):
     allowed_domains = ['amazon', 'amzn', 'link.amazon']
-    link_pattern = r'https?://(?:www\.)?([a-zA-Z0-9.-]+)(?:/[^\s]*)?'
+    
+    # Yeh regex query parameters aur dusre ke tags ko shuruwat se hi alag kar dega
+    link_pattern = r'https?://(?:www\.)?[a-zA-Z0-9.-]+(?:/[^\s?#]*)?'
     
     matches = list(re.finditer(link_pattern, text, re.IGNORECASE))
     updated_text = text
@@ -91,19 +94,19 @@ def process_deal(text):
     
     for match in matches:
         full_link = match.group(0)
-        domain = match.group(1).lower()
+        
+        parsed = urlparse(full_link)
+        domain = parsed.netloc.lower()
         
         if any(d in domain for d in allowed_domains):
             found_valid_link = True
             
-            # --- FIXED LINK CLEANING LOGIC ---
-            # Purane sare parameters (aur dusre ka tag) strip karke sirf clean base URL nikalenge
-            base_url = full_link.split('?')[0]
-            new_link = f"{base_url}?tag={AMAZON_TAG}"
-            # ---------------------------------
+            # Sirf clean path rakhenge aur apna official tag lagayenge
+            clean_base_url = f"{parsed.scheme}://{parsed.netloc}{parsed.path}"
+            new_link = f"{clean_base_url}?tag={AMAZON_TAG}"
             
             if not first_link_clean:
-                first_link_clean = base_url
+                first_link_clean = clean_base_url
                 
             updated_text = updated_text.replace(full_link, new_link)
         else:
@@ -121,7 +124,6 @@ def process_deal(text):
         lower_text = text.lower()
         header_banner = ""
         
-        # Specific banner for ₹1 deals vs Glitch deals (including 'grab')
         if "rs. 1" in lower_text or "rs 1" in lower_text or "₹1" in text or "1 rupe" in lower_text:
             header_banner = "🔥 **MEGA ₹1 STORE / 1 RUPEE DEAL!** 🔥\n━━━━━━━━━━━━━\n"
         elif any(k in lower_text for k in ["lowest", "free", "error", "glitch", "49", "loot", "grab"]):
