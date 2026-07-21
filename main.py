@@ -4,6 +4,7 @@ import asyncio
 import logging
 import sys
 import threading
+import requests
 from collections import deque
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse
@@ -58,6 +59,17 @@ def run_dummy_server():
 # Start server immediately in background thread
 threading.Thread(target=run_dummy_server, daemon=True).start()
 
+# --- LINK EXPANDER FUNCTION ---
+def expand_short_link(url):
+    try:
+        # Request bhej kar dekhenge ki short link kahan redirect ho raha hai
+        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
+        response = requests.head(url, headers=headers, allow_redirects=True, timeout=5)
+        return response.url
+    except Exception as e:
+        logger.error(f"Failed to expand URL {url}: {e}")
+        return url
+
 # --- LOGIC ---
 def clean_and_format_text(text):
     cleaned = re.sub(r'[═▀▄█▬]{3,}', '', text)
@@ -83,9 +95,7 @@ def clean_and_format_text(text):
 
 def process_deal(text):
     allowed_domains = ['amazon', 'amzn', 'link.amazon']
-    
-    # Yeh regex query parameters aur dusre ke tags ko shuruwat se hi alag kar dega
-    link_pattern = r'https?://(?:www\.)?[a-zA-Z0-9.-]+(?:/[^\s?#]*)?'
+    link_pattern = r'https?://(?:www\.)?[a-zA-Z0-9.-]+[^\s?#]*(?:\?[^\s#]*)?'
     
     matches = list(re.finditer(link_pattern, text, re.IGNORECASE))
     updated_text = text
@@ -95,19 +105,29 @@ def process_deal(text):
     for match in matches:
         full_link = match.group(0)
         
-        parsed = urlparse(full_link)
+        # Agar amzn.to short link hai, toh usko pehle expand karke asli lamba URL nikalenge
+        target_link = full_link
+        if "amzn.to" in full_link:
+            target_link = expand_short_link(full_link)
+            
+        parsed = urlparse(target_link)
         domain = parsed.netloc.lower()
         
         if any(d in domain for d in allowed_domains):
             found_valid_link = True
             
-            # Sirf clean path rakhenge aur apna official tag lagayenge
-            clean_base_url = f"{parsed.scheme}://{parsed.netloc}{parsed.path}"
-            new_link = f"{clean_base_url}?tag={AMAZON_TAG}"
+            # Asli URL milne ke baad purana tag hata kar apna tag lagayenge
+            base_url = target_link.split('&tag=')[0].split('?tag=')[0].split('?')[0]
             
-            if not first_link_clean:
-                first_link_clean = clean_base_url
+            if '?' in base_url:
+                new_link = f"{base_url}&tag={AMAZON_TAG}"
+            else:
+                new_link = f"{base_url}?tag={AMAZON_TAG}"
                 
+            if not first_link_clean:
+                first_link_clean = base_url
+                
+            # Message ke andar wale short/gande link ko naye clean link se replace kar denge
             updated_text = updated_text.replace(full_link, new_link)
         else:
             updated_text = updated_text.replace(full_link, "")
@@ -118,7 +138,6 @@ def process_deal(text):
             return None
         
         recent_deals.append(first_link_clean)
-        
         formatted_text = clean_and_format_text(updated_text)
         
         lower_text = text.lower()
