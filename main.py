@@ -95,10 +95,15 @@ def process_deal(text):
         
         if any(d in domain for d in allowed_domains):
             found_valid_link = True
-            new_link = full_link.split('?')[0] + f"?tag={AMAZON_TAG}"
+            
+            # --- FIXED LINK CLEANING LOGIC ---
+            # Purane sare parameters (aur dusre ka tag) strip karke sirf clean base URL nikalenge
+            base_url = full_link.split('?')[0]
+            new_link = f"{base_url}?tag={AMAZON_TAG}"
+            # ---------------------------------
             
             if not first_link_clean:
-                first_link_clean = new_link.split('?')[0]
+                first_link_clean = base_url
                 
             updated_text = updated_text.replace(full_link, new_link)
         else:
