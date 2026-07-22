@@ -4,6 +4,7 @@ import asyncio
 import logging
 import sys
 import threading
+import json
 import requests
 from collections import deque
 from http.server import HTTPServer, BaseHTTPRequestHandler
@@ -59,16 +60,48 @@ def run_dummy_server():
 # Start server immediately in background thread
 threading.Thread(target=run_dummy_server, daemon=True).start()
 
-# --- LINK EXPANDER FUNCTION ---
+# --- LINK EXPANDER & EARNKARO FUNCTIONS ---
 def expand_short_link(url):
     try:
-        # Request bhej kar dekhenge ki short link kahan redirect ho raha hai
         headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
         response = requests.head(url, headers=headers, allow_redirects=True, timeout=5)
         return response.url
     except Exception as e:
         logger.error(f"Failed to expand URL {url}: {e}")
         return url
+
+def process_earnkaro_link(target_url):
+    try:
+        # Flipkart, Myntra, Meesho ya baki short links ko expand karna
+        if any(domain in target_url for domain in ["fkrt.cc", "fkr.in", "myntra.it", "meesho", "bit.ly"]):
+            target_url = expand_short_link(target_url)
+
+        if not os.path.exists("earnkaro_session.json"):
+            logger.error("earnkaro_session.json file not found!")
+            return target_url
+
+        with open("earnkaro_session.json", "r") as f:
+            cookies_list = f.read()
+        
+        cookie_dict = {}
+        cookies_json = json.loads(cookies_list)
+        for cookie in cookies_json:
+            cookie_dict[cookie['name']] = cookie['value']
+            
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+            "Referer": "https://earnkaro.com/"
+        }
+        
+        payload = {"url": target_url}
+        response = requests.post("https://earnkaro.com/api/make_affiliate_link", headers=headers, cookies=cookie_dict, data=payload, timeout=10)
+        
+        if response.status_code == 200:
+            data = response.json()
+            return data.get("affiliate_url") or data.get("short_link") or target_url
+    except Exception as e:
+        logger.error(f"EarnKaro API Error: {e}")
+    return target_url
 
 # --- LOGIC ---
 def clean_and_format_text(text):
@@ -94,29 +127,29 @@ def clean_and_format_text(text):
     return cleaned.strip()
 
 def process_deal(text):
-    allowed_domains = ['amazon', 'amzn', 'link.amazon']
-    link_pattern = r'https?://(?:www\.)?[a-zA-Z0-9.-]+[^\s?#]*(?:\?[^\s#]*)?'
+    amazon_domains = ['amazon', 'amzn', 'link.amazon']
+    earnkaro_domains = ['fkrt.cc', 'fkr.in', 'flipkart', 'myntra', 'meesho', 'ajio']
     
+    link_pattern = r'https?://(?:www\.)?[a-zA-Z0-9.-]+[^\s?#]*(?:\?[^\s#]*)?'
     matches = list(re.finditer(link_pattern, text, re.IGNORECASE))
+    
     updated_text = text
     found_valid_link = False
     first_link_clean = None
     
     for match in matches:
         full_link = match.group(0)
-        
-        # Agar amzn.to short link hai, toh usko pehle expand karke asli lamba URL nikalenge
         target_link = full_link
+        
         if "amzn.to" in full_link:
             target_link = expand_short_link(full_link)
             
         parsed = urlparse(target_link)
         domain = parsed.netloc.lower()
         
-        if any(d in domain for d in allowed_domains):
+        # 1. Amazon Link Handling
+        if any(d in domain for d in amazon_domains):
             found_valid_link = True
-            
-            # Asli URL milne ke baad purana tag hata kar apna tag lagayenge
             base_url = target_link.split('&tag=')[0].split('?tag=')[0].split('?')[0]
             
             if '?' in base_url:
@@ -127,9 +160,19 @@ def process_deal(text):
             if not first_link_clean:
                 first_link_clean = base_url
                 
-            # Message ke andar wale short/gande link ko naye clean link se replace kar denge
+            updated_text = updated_text.replace(full_link, new_link)
+            
+        # 2. Flipkart, Myntra, Meesho (EarnKaro) Link Handling
+        elif any(d in domain or d in target_link.lower() for d in earnkaro_domains):
+            found_valid_link = True
+            new_link = process_earnkaro_link(full_link)
+            
+            if not first_link_clean:
+                first_link_clean = full_link
+                
             updated_text = updated_text.replace(full_link, new_link)
         else:
+            # Baaki faltu links ko hataane ke liye
             updated_text = updated_text.replace(full_link, "")
             
     if found_valid_link:
@@ -194,7 +237,7 @@ async def main():
                     await client.send_message(TARGET_CHANNEL, final_text, link_preview=False)
                 
                 total_forwarded_count += 1
-                logger.info(f"✅ Clean Amazon deal posted! Total: {total_forwarded_count}")
+                logger.info(f"✅ Clean affiliate deal posted! Total: {total_forwarded_count}")
 
     await client.start()
     await client.run_until_disconnected()
