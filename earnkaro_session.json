@@ -1,0 +1,342 @@
+[
+    {
+        "name": "g_state",
+        "value": "{\"i_l\":0,\"i_ll\":1784626004209,\"i_b\":\"0E3SR4KjLkqtat5aouYQOC5yPtUBkX2l+CiKyWN1W/E\",\"i_e\":{\"enable_itp_optimization\":24},\"i_et\":1784626004209}",
+        "domain": "earnkaro.com",
+        "path": "/",
+        "expires": 1800178004,
+        "httpOnly": false,
+        "secure": false,
+        "sameSite": "Lax"
+    },
+    {
+        "name": "WZRK_G",
+        "value": "35f07f56ee1543d49b15867e89449056",
+        "domain": ".earnkaro.com",
+        "path": "/",
+        "expires": 1819186006.488113,
+        "httpOnly": false,
+        "secure": false,
+        "sameSite": "Lax"
+    },
+    {
+        "name": "_s",
+        "value": "gxAQiFQDhTdEC%2Fzhj2GSqgwfeBDqX96Pang7xWp6PKd8hyhet%2FbnHkIaDYiwnEwx",
+        "domain": ".app.link",
+        "path": "/",
+        "expires": 1816162006.57594,
+        "httpOnly": false,
+        "secure": true,
+        "sameSite": "None"
+    },
+    {
+        "name": "CLID",
+        "value": "768ad1a58eaa4ac894cbb4b3edb99a32.20260721.20270721",
+        "domain": "www.clarity.ms",
+        "path": "/",
+        "expires": 1816162007.103362,
+        "httpOnly": true,
+        "secure": true,
+        "sameSite": "None"
+    },
+    {
+        "name": "_gid",
+        "value": "GA1.2.920624034.1784626007",
+        "domain": ".earnkaro.com",
+        "path": "/",
+        "expires": 1784712884,
+        "httpOnly": false,
+        "secure": false,
+        "sameSite": "Lax"
+    },
+    {
+        "name": "_clck",
+        "value": "nzkklb%5E2%5Eg7x%5E0%5E2393",
+        "domain": ".earnkaro.com",
+        "path": "/",
+        "expires": 1816162009,
+        "httpOnly": false,
+        "secure": false,
+        "sameSite": "Lax"
+    },
+    {
+        "name": "bcookie",
+        "value": "\"v=2&bb72abeb-d39e-4596-87a8-e7379689134d\"",
+        "domain": ".linkedin.com",
+        "path": "/",
+        "expires": 1816162011.620863,
+        "httpOnly": false,
+        "secure": true,
+        "sameSite": "None"
+    },
+    {
+        "name": "lidc",
+        "value": "\"b=OGST01:s=O:r=O:a=O:p=O:g=3874:u=1:x=1:i=1784626010:t=1784712410:v=2:sig=AQFZVYUZTZaqj01Taeqy6O7o5jPQ2m9D\"",
+        "domain": ".linkedin.com",
+        "path": "/",
+        "expires": 1784712409.640738,
+        "httpOnly": false,
+        "secure": true,
+        "sameSite": "None"
+    },
+    {
+        "name": "_fbp",
+        "value": "fb.1.1784626009721.171857771115999884",
+        "domain": ".earnkaro.com",
+        "path": "/",
+        "expires": 1792402483,
+        "httpOnly": false,
+        "secure": false,
+        "sameSite": "Lax"
+    },
+    {
+        "name": "li_sugr",
+        "value": "09ceffe8-4069-49a3-af1b-7494930af9e1",
+        "domain": ".linkedin.com",
+        "path": "/",
+        "expires": 1792402011.62072,
+        "httpOnly": false,
+        "secure": true,
+        "sameSite": "None"
+    },
+    {
+        "name": "UserMatchHistory",
+        "value": "AQKsSmo4gU-dFgAAAZ-D_9qlDhNWdhfIoc2T-HcTdCrS8xShmeI76ClMSlt05ywCvBTb4Bgtlpy2dA",
+        "domain": ".linkedin.com",
+        "path": "/",
+        "expires": 1787218010.373681,
+        "httpOnly": false,
+        "secure": true,
+        "sameSite": "None"
+    },
+    {
+        "name": "AnalyticsSyncHistory",
+        "value": "AQJoWnctezwmCAAAAZ-D_9qlFyrFwfJ44TY5aK2FolV5qtXwdBk-Cd3T4fj4anQrEGqb5boucCyb4PqceEoTZg",
+        "domain": ".linkedin.com",
+        "path": "/",
+        "expires": 1787218010.373716,
+        "httpOnly": false,
+        "secure": true,
+        "sameSite": "None"
+    },
+    {
+        "name": "MUID",
+        "value": "02D7FC3473E760E01996EBA9729461C8",
+        "domain": ".bing.com",
+        "path": "/",
+        "expires": 1818322010.618793,
+        "httpOnly": false,
+        "secure": true,
+        "sameSite": "None"
+    },
+    {
+        "name": "MR",
+        "value": "0",
+        "domain": ".c.bing.com",
+        "path": "/",
+        "expires": 1785230810.618879,
+        "httpOnly": false,
+        "secure": true,
+        "sameSite": "None"
+    },
+    {
+        "name": "SRM_B",
+        "value": "02D7FC3473E760E01996EBA9729461C8",
+        "domain": ".c.bing.com",
+        "path": "/",
+        "expires": 1818322010.618919,
+        "httpOnly": false,
+        "secure": true,
+        "sameSite": "None"
+    },
+    {
+        "name": "bscookie",
+        "value": "\"v=1&202607210926511e0dd843-04b5-453f-81ef-2cb90f88409eAQE6mpFbTjSZWmpjRHiUn7RDaBqnrokb\"",
+        "domain": ".www.linkedin.com",
+        "path": "/",
+        "expires": 1816162010.781666,
+        "httpOnly": true,
+        "secure": true,
+        "sameSite": "None"
+    },
+    {
+        "name": "SM",
+        "value": "C",
+        "domain": ".c.clarity.ms",
+        "path": "/",
+        "expires": -1,
+        "httpOnly": false,
+        "secure": true,
+        "sameSite": "None"
+    },
+    {
+        "name": "MUID",
+        "value": "02D7FC3473E760E01996EBA9729461C8",
+        "domain": ".clarity.ms",
+        "path": "/",
+        "expires": 1818322010.83195,
+        "httpOnly": false,
+        "secure": true,
+        "sameSite": "None"
+    },
+    {
+        "name": "MR",
+        "value": "0",
+        "domain": ".c.clarity.ms",
+        "path": "/",
+        "expires": 1785230810.832047,
+        "httpOnly": false,
+        "secure": true,
+        "sameSite": "None"
+    },
+    {
+        "name": "ANONCHK",
+        "value": "0",
+        "domain": ".c.clarity.ms",
+        "path": "/",
+        "expires": 1784626610.832095,
+        "httpOnly": false,
+        "secure": true,
+        "sameSite": "None"
+    },
+    {
+        "name": "IDE",
+        "value": "AHWqTUn3GNmTiOZvLlE9GpsrhMwAg2dCMJwrBLzuJUX3eKcBXWjiEJ1GvQbe-1jh",
+        "domain": ".doubleclick.net",
+        "path": "/",
+        "expires": 1819186018.710664,
+        "httpOnly": true,
+        "secure": true,
+        "sameSite": "None"
+    },
+    {
+        "name": "pps_referance_cookie_8a7f0856f7a56ce3930516aae84d8cb0ebb4eb285e38e4fcb86302ae58c4d6d6",
+        "value": "7fa92528a62341455fd541c44224b21ab5ae11bdd731a7bdd81ed301e53ea24df1b27db37708dfd064faff77bfef12a37518958cbeb942153b94f9aab534293e",
+        "domain": "earnkaro.com",
+        "path": "/",
+        "expires": 1787218029.122468,
+        "httpOnly": true,
+        "secure": true,
+        "sameSite": "Strict"
+    },
+    {
+        "name": "__cf_bm",
+        "value": "G6FaRBTyecRNnjOnH2jqwGVYRUszqusW6PmC8DHR9pM-1784626221.813767-1.0.1.1-9EIqPv8lvAitzhvT3vP4FfzZC6Dj5SZbPSQRGReRwcJALCon14K.c0.huLMt_cOFljcjUzOgNQLvxAU7aQx_VudLqegRfkz0YyVrX_NvdVOG_HBdSnhVE6Un3BqyjBDj",
+        "domain": ".linkedin.com",
+        "path": "/",
+        "expires": 1784628021.52143,
+        "httpOnly": true,
+        "secure": true,
+        "sameSite": "None"
+    },
+    {
+        "name": "X-PPS-Status",
+        "value": "signed",
+        "domain": "earnkaro.com",
+        "path": "/",
+        "expires": 1789810482.974116,
+        "httpOnly": false,
+        "secure": false,
+        "sameSite": "Lax"
+    },
+    {
+        "name": "RID",
+        "value": "5464114",
+        "domain": ".earnkaro.com",
+        "path": "/",
+        "expires": 1787218482.973799,
+        "httpOnly": false,
+        "secure": false,
+        "sameSite": "Lax"
+    },
+    {
+        "name": "jofedate",
+        "value": "Mon%20Jul%2027%202026%2019%3A48%3A35%20GMT%2B0000%20(Coordinated%20Universal%20Time)",
+        "domain": ".earnkaro.com",
+        "path": "/",
+        "expires": 1785231282.973943,
+        "httpOnly": false,
+        "secure": false,
+        "sameSite": "Lax"
+    },
+    {
+        "name": "signUpInfo",
+        "value": "%7B%22ReferralID%22%3A%22%22%2C%22ReferralName%22%3A%22%22%2C%22ReferralCode%22%3A%22%22%2C%22SignUpBonus%22%3A%22%22%7D",
+        "domain": ".earnkaro.com",
+        "path": "/",
+        "expires": -1,
+        "httpOnly": false,
+        "secure": false,
+        "sameSite": "Lax"
+    },
+    {
+        "name": "customerType",
+        "value": "existing",
+        "domain": ".earnkaro.com",
+        "path": "/",
+        "expires": 1789810482.974084,
+        "httpOnly": false,
+        "secure": false,
+        "sameSite": "Lax"
+    },
+    {
+        "name": "_ga",
+        "value": "GA1.2.1697265887.1784626007",
+        "domain": ".earnkaro.com",
+        "path": "/",
+        "expires": 1819186484.561889,
+        "httpOnly": false,
+        "secure": false,
+        "sameSite": "Lax"
+    },
+    {
+        "name": "_gat_UA-22268078-28",
+        "value": "1",
+        "domain": ".earnkaro.com",
+        "path": "/",
+        "expires": 1784626544,
+        "httpOnly": false,
+        "secure": false,
+        "sameSite": "Lax"
+    },
+    {
+        "name": "_gcl_au",
+        "value": "1.2.2069616152.1784626007",
+        "domain": ".earnkaro.com",
+        "path": "/",
+        "expires": 1819186484.607459,
+        "httpOnly": false,
+        "secure": false,
+        "sameSite": "Lax"
+    },
+    {
+        "name": "_ga_QJMJREFLZX",
+        "value": "GS2.2.s1784626009$o1$g1$t1784626484$j60$l0$h0",
+        "domain": ".earnkaro.com",
+        "path": "/",
+        "expires": 1819186484.621391,
+        "httpOnly": false,
+        "secure": false,
+        "sameSite": "Lax"
+    },
+    {
+        "name": "_ga_7JQKE6FHDP",
+        "value": "GS2.1.s1784626009$o1$g1$t1784626485$j59$l0$h0",
+        "domain": ".earnkaro.com",
+        "path": "/",
+        "expires": 1819186485.098507,
+        "httpOnly": false,
+        "secure": false,
+        "sameSite": "Lax"
+    },
+    {
+        "name": "WZRK_S_466-77K-575Z",
+        "value": "%7B%22p%22%3A1%2C%22s%22%3A1784626006%2C%22t%22%3A1784626490%7D",
+        "domain": ".earnkaro.com",
+        "path": "/",
+        "expires": 1784627690,
+        "httpOnly": false,
+        "secure": false,
+        "sameSite": "Lax"
+    }
+]
