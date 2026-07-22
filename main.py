@@ -7,7 +7,7 @@ import threading
 import requests
 from collections import deque
 from http.server import HTTPServer, BaseHTTPRequestHandler
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urlencode, parse_qsl, urlunparse
 from telethon import TelegramClient, events, types
 from telethon.sessions import StringSession
 
@@ -31,7 +31,9 @@ LOOT_RESTRICTED_CHANNELS = [
 
 TARGET_CHANNEL = -1004401616132
 AMAZON_TAG = 'dealvaulthq-21'
-WATERMARK_TEXT = "\n\n━━━━━━━━━━━━━\n⚡ @DealVaultHQ"
+
+# Highlighted and structured watermark / banner
+WATERMARK_TEXT = "\n\n━━━━━━━━━━━━━━━━━━━━━━\n🔥 **JOIN US:** ⚡ @DealVaultHQ\n━━━━━━━━━━━━━━━━━━━━━━"
 
 recent_deals = deque(maxlen=100)
 bot_paused = False
@@ -69,29 +71,75 @@ def expand_short_link(url):
         logger.error(f"Failed to expand URL {url}: {e}")
         return url
 
-# --- LOGIC ---
+# --- HELPER TO INJECT AMAZON TAG CLEANLY ---
+def inject_amazon_tag(url, tag):
+    parsed = urlparse(url)
+    query_params = dict(parse_qsl(parsed.query))
+    query_params['tag'] = tag
+    new_query = urlencode(query_params)
+    new_parsed = parsed._replace(query=new_query)
+    return urlunparse(new_parsed)
+
+# --- EXPANDED CATEGORIES & MASSIVE HASHTAG LIST ---
 def clean_and_format_text(text):
+    if not text:
+        return ""
+        
     cleaned = re.sub(r'[═▀▄█▬]{3,}', '', text)
     cleaned = re.sub(r'\n{3,}', '\n\n', cleaned)
     
     tags_list = []
     lower_txt = text.lower()
     
-    if any(w in lower_txt for w in ['shoe', 'sneaker', 'nike', 'puma', 'adidas', 'clothing', 'shirt', 'jean', 'tshirt', 'facewash', 'skin', 'beauty', 'cream']):
-        tags_list.append("#FashionBeauty")
-    if any(w in lower_txt for w in ['phone', 'mobile', 'earbud', 'headphone', 'watch', 'smartwatch', 'laptop', 'charger', 'cable']):
-        tags_list.append("#Electronics")
-    if any(w in lower_txt for w in ['kitchen', 'home', 'bulb', 'bottle', 'bedsheet', 'pillow', 'cleaner']):
-        tags_list.append("#HomeNeeds")
-    if any(w in lower_txt for w in ['loot', 'glitch', 'error', '99', '49', '1', 'grab']):
-        tags_list.append("#LootDeals")
+    if any(w in lower_txt for w in ['shoe', 'sneaker', 'nike', 'puma', 'adidas', 'clothing', 'shirt', 'jean', 'tshirt', 'facewash', 'skin', 'beauty', 'cream', 'makeup', 'lip', 'hair', 'shampoo', 'perfume', 'deo', 'trimmer', 'dryer', 'kurti', 'saree', 'top', 'jacket', 'watch']):
+        tags_list.extend(["#FashionBeauty", "#StyleHub", "#OOTD", "#TrendingFashion", "#BeautyDeals", "#Cosmetics"])
         
-    final_tags = " ".join(list(dict.fromkeys(tags_list))[:2])
+    if any(w in lower_txt for w in ['phone', 'mobile', 'earbud', 'headphone', 'watch', 'smartwatch', 'laptop', 'charger', 'cable', 'speaker', 'tablet', 'powerbank', 'adapter', 'mouse', 'keyboard', 'tv', 'cam', 'router', 'bulb']):
+        tags_list.extend(["#Electronics", "#TechDeals", "#Gadgets", "#SmartTech", "#MobileAccessories", "#TechOffers"])
+        
+    if any(w in lower_txt for w in ['kitchen', 'home', 'bottle', 'bedsheet', 'pillow', 'cleaner', 'container', 'mop', 'utensils', 'cooker', 'pan', 'towel', 'curtain', 'mat', 'lamp', 'decor', 'organizer', 'storage']):
+        tags_list.extend(["#HomeNeeds", "#KitchenEssentials", "#HomeDecor", "#SmartHome", "#HouseholdItems", "#InteriorStyling"])
+        
+    if any(w in lower_txt for w in ['grocery', 'oil', 'tea', 'coffee', 'snack', 'biscuit', 'chocolate', 'detergent', 'soap', 'toothpaste', 'dishwash', 'pampers', 'diaper', 'food', 'masala', 'rice', 'dal']):
+        tags_list.extend(["#GroceryEssentials", "#DailyNeeds", "#SuperSaver", "#KitchenStaples", "#HouseholdGroceries"])
+        
+    if any(w in lower_txt for w in ['toy', 'game', 'baby', 'feeding', 'stroller', 'school', 'bag', 'bottle', 'pencil', 'box', 'kids', 'infant', 'diaper', 'pampers']):
+        tags_list.extend(["#KidsToys", "#BabyCare", "#SchoolEssentials", "#ParentingLife", "#ToysCollection"])
+        
+    if any(w in lower_txt for w in ['loot', 'glitch', 'error', '99', '49', 'grab', 'steal', 'flash', 'lowest', 'cheap', 'discount', 'offer', 'sale']):
+        tags_list.extend(["#LootDeals", "#MegaDiscounts", "#PriceDrop", "#StealDeal", "#FlashSale", "#BestOffers", "#BudgetBuys"])
+
+    universal_tags = ["#DealVaultHQ", "#ShoppingLoots", "#DailyDeals", "#OnlineShopping", "#SaveMoney", "#BestDealsIndia"]
+    tags_list.extend(universal_tags)
+        
+    final_tags = " ".join(list(dict.fromkeys(tags_list))[:8])
     
     if final_tags:
         return cleaned.strip() + "\n\n" + final_tags
     return cleaned.strip()
 
+# --- LOOT & 1 RS RESTRICTION CHECKERS ---
+def check_loot_restriction_keywords(text):
+    if not text:
+        return False
+    lower_text = text.lower()
+    loot_keywords = [
+        'loot deal', 'lootdeal', 'loot', 'mrp error', 'price error', 
+        'glitch deal', 'bug deal', 'loot offer', 'mega loot', 'sabse sasta',
+        'steal deal', 'flash sale', 'lowest price', 'half price'
+    ]
+    return any(keyword in lower_text for keyword in loot_keywords)
+
+def is_strict_one_rupee_deal(text):
+    if not text:
+        return False
+    lower_text = text.lower()
+    one_rupee_patterns = [
+        r'₹\s*1\b', r'rs\.?\s*1\b', r'1\s*rupee', r'1 rs', r'@\s*1\b'
+    ]
+    return any(re.search(pat, lower_text) for pat in one_rupee_patterns)
+
+# --- PROCESS DEAL FUNCTION ---
 def process_deal(text):
     allowed_domains = ['amazon', 'amzn', 'link.amazon']
     link_pattern = r'https?://(?:www\.)?[a-zA-Z0-9.-]+[^\s?#]*(?:\?[^\s#]*)?'
@@ -113,12 +161,13 @@ def process_deal(text):
         
         if any(d in domain for d in allowed_domains):
             found_valid_link = True
+            
             base_url = target_link.split('&tag=')[0].split('?tag=')[0].split('?')[0]
             
             if '?' in base_url:
-                new_link = f"{base_url}&tag={AMAZON_TAG}".strip()
+                new_link = f"{base_url}&tag={AMAZON_TAG}"
             else:
-                new_link = f"{base_url}?tag={AMAZON_TAG}".strip()
+                new_link = f"{base_url}?tag={AMAZON_TAG}"
                 
             if not first_link_clean:
                 first_link_clean = base_url
@@ -135,19 +184,19 @@ def process_deal(text):
         recent_deals.append(first_link_clean)
         formatted_text = clean_and_format_text(updated_text)
         
-        lower_text = text.lower()
         header_banner = ""
         
-        if "rs. 1" in lower_text or "rs 1" in lower_text or "₹1" in text or "1 rupe" in lower_text:
-            header_banner = "🔥 **MEGA ₹1 STORE / 1 RUPEE DEAL!** 🔥\n━━━━━━━━━━━━━\n"
-        elif any(k in lower_text for k in ["lowest", "free", "error", "glitch", "49", "loot", "grab"]):
-            header_banner = "🚨 **CRAZY GLITCH / LOWEST PRICE ALERT!**\n━━━━━━━━━━━━━\n"
+        if is_strict_one_rupee_deal(text):
+            header_banner = "🔥 **MEGA ₹1 STORE / 1 RUPEE DEAL!** 🔥\n━━━━━━━━━━━━━━━━━━━━━━\n"
+        elif check_loot_restriction_keywords(text):
+            header_banner = "🚨 **CRAZY GLITCH / LOWEST PRICE ALERT!**\n━━━━━━━━━━━━━━━━━━━━━━\n"
             
         final_output = header_banner + formatted_text + WATERMARK_TEXT
         return final_output
         
     return None
 
+# --- MAIN TELEGRAM CLIENT LOOP ---
 async def main():
     client = TelegramClient(StringSession(STRING_SESSION), API_ID, API_HASH)
     
@@ -177,7 +226,7 @@ async def main():
             text = event.message.text or ""
             
             if event.chat_id in LOOT_RESTRICTED_CHANNELS:
-                if "loot" not in text.lower():
+                if not check_loot_restriction_keywords(text):
                     return
 
             final_text = process_deal(text)
