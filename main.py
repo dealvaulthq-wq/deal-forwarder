@@ -62,7 +62,6 @@ threading.Thread(target=run_dummy_server, daemon=True).start()
 # --- LINK EXPANDER FUNCTION ---
 def expand_short_link(url):
     try:
-        # Request bhej kar dekhenge ki short link kahan redirect ho raha hai
         headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
         response = requests.head(url, headers=headers, allow_redirects=True, timeout=5)
         return response.url
@@ -104,9 +103,8 @@ def process_deal(text):
     
     for match in matches:
         full_link = match.group(0)
-        
-        # Agar amzn.to short link hai, toh usko pehle expand karke asli lamba URL nikalenge
         target_link = full_link
+        
         if "amzn.to" in full_link:
             target_link = expand_short_link(full_link)
             
@@ -115,19 +113,16 @@ def process_deal(text):
         
         if any(d in domain for d in allowed_domains):
             found_valid_link = True
-            
-            # Asli URL milne ke baad purana tag hata kar apna tag lagayenge
             base_url = target_link.split('&tag=')[0].split('?tag=')[0].split('?')[0]
             
             if '?' in base_url:
-                new_link = f"{base_url}&tag={AMAZON_TAG}"
+                new_link = f"{base_url}&tag={AMAZON_TAG}".strip()
             else:
-                new_link = f"{base_url}?tag={AMAZON_TAG}"
+                new_link = f"{base_url}?tag={AMAZON_TAG}".strip()
                 
             if not first_link_clean:
                 first_link_clean = base_url
                 
-            # Message ke andar wale short/gande link ko naye clean link se replace kar denge
             updated_text = updated_text.replace(full_link, new_link)
         else:
             updated_text = updated_text.replace(full_link, "")
