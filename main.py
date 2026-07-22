@@ -32,8 +32,8 @@ LOOT_RESTRICTED_CHANNELS = [
 TARGET_CHANNEL = -1004401616132
 AMAZON_TAG = 'dealvaulthq-21'
 
-# Highlighted and structured watermark / banner
-WATERMARK_TEXT = "\n\n━━━━━━━━━━━━━━━━━━━━━━\n🔥 **JOIN US:** ⚡ @DealVaultHQ\n━━━━━━━━━━━━━━━━━━━━━━"
+# Clean, simple and neat watermark matching your early style
+WATERMARK_TEXT = "\n\n━━━━━━━━━━━━━\n⚡ @DealVaultHQ"
 
 recent_deals = deque(maxlen=100)
 bot_paused = False
@@ -58,7 +58,6 @@ def run_dummy_server():
     logger.info(f"🟢 Keep-alive HTTP Server running on port {port}")
     server.serve_forever()
 
-# Start server immediately in background thread
 threading.Thread(target=run_dummy_server, daemon=True).start()
 
 # --- LINK EXPANDER FUNCTION ---
@@ -80,7 +79,7 @@ def inject_amazon_tag(url, tag):
     new_parsed = parsed._replace(query=new_query)
     return urlunparse(new_parsed)
 
-# --- EXPANDED CATEGORIES & MASSIVE HASHTAG LIST ---
+# --- CLEAN CATEGORY FORMATTING (MAX 3-4 RELEVANT HASHTAGS) ---
 def clean_and_format_text(text):
     if not text:
         return ""
@@ -92,27 +91,25 @@ def clean_and_format_text(text):
     lower_txt = text.lower()
     
     if any(w in lower_txt for w in ['shoe', 'sneaker', 'nike', 'puma', 'adidas', 'clothing', 'shirt', 'jean', 'tshirt', 'facewash', 'skin', 'beauty', 'cream', 'makeup', 'lip', 'hair', 'shampoo', 'perfume', 'deo', 'trimmer', 'dryer', 'kurti', 'saree', 'top', 'jacket', 'watch']):
-        tags_list.extend(["#FashionBeauty", "#StyleHub", "#OOTD", "#TrendingFashion", "#BeautyDeals", "#Cosmetics"])
+        tags_list.extend(["#FashionBeauty", "#StyleHub"])
         
-    if any(w in lower_txt for w in ['phone', 'mobile', 'earbud', 'headphone', 'watch', 'smartwatch', 'laptop', 'charger', 'cable', 'speaker', 'tablet', 'powerbank', 'adapter', 'mouse', 'keyboard', 'tv', 'cam', 'router', 'bulb']):
-        tags_list.extend(["#Electronics", "#TechDeals", "#Gadgets", "#SmartTech", "#MobileAccessories", "#TechOffers"])
+    if any(w in lower_txt for w in ['phone', 'mobile', 'earbud', 'headphone', 'watch', 'smartwatch', 'laptop', 'charger', 'cable', 'speaker', 'tablet', 'powerbank', 'adapter', 'mouse', 'keyboard', 'tv', 'cam', 'router', 'bulb', 'soundbar']):
+        tags_list.extend(["#Electronics", "#TechDeals"])
         
-    if any(w in lower_txt for w in ['kitchen', 'home', 'bottle', 'bedsheet', 'pillow', 'cleaner', 'container', 'mop', 'utensils', 'cooker', 'pan', 'towel', 'curtain', 'mat', 'lamp', 'decor', 'organizer', 'storage']):
-        tags_list.extend(["#HomeNeeds", "#KitchenEssentials", "#HomeDecor", "#SmartHome", "#HouseholdItems", "#InteriorStyling"])
+    if any(w in lower_txt for w in ['kitchen', 'home', 'bottle', 'bedsheet', 'pillow', 'cleaner', 'container', 'mop', 'utensils', 'cooker', 'pan', 'towel', 'curtain', 'mat', 'lamp', 'decor', 'organizer', 'storage', 'purifier']):
+        tags_list.extend(["#HomeNeeds", "#KitchenEssentials"])
         
     if any(w in lower_txt for w in ['grocery', 'oil', 'tea', 'coffee', 'snack', 'biscuit', 'chocolate', 'detergent', 'soap', 'toothpaste', 'dishwash', 'pampers', 'diaper', 'food', 'masala', 'rice', 'dal']):
-        tags_list.extend(["#GroceryEssentials", "#DailyNeeds", "#SuperSaver", "#KitchenStaples", "#HouseholdGroceries"])
+        tags_list.extend(["#GroceryEssentials", "#DailyNeeds"])
         
-    if any(w in lower_txt for w in ['toy', 'game', 'baby', 'feeding', 'stroller', 'school', 'bag', 'bottle', 'pencil', 'box', 'kids', 'infant', 'diaper', 'pampers']):
-        tags_list.extend(["#KidsToys", "#BabyCare", "#SchoolEssentials", "#ParentingLife", "#ToysCollection"])
+    if any(w in lower_txt for w in ['toy', 'game', 'baby', 'feeding', 'stroller', 'school', 'bag', 'bottle', 'pencil', 'box', 'kids', 'infant']):
+        tags_list.extend(["#KidsToys", "#BabyCare"])
         
     if any(w in lower_txt for w in ['loot', 'glitch', 'error', '99', '49', 'grab', 'steal', 'flash', 'lowest', 'cheap', 'discount', 'offer', 'sale']):
-        tags_list.extend(["#LootDeals", "#MegaDiscounts", "#PriceDrop", "#StealDeal", "#FlashSale", "#BestOffers", "#BudgetBuys"])
+        tags_list.extend(["#LootDeals", "#StealDeal"])
 
-    universal_tags = ["#DealVaultHQ", "#ShoppingLoots", "#DailyDeals", "#OnlineShopping", "#SaveMoney", "#BestDealsIndia"]
-    tags_list.extend(universal_tags)
-        
-    final_tags = " ".join(list(dict.fromkeys(tags_list))[:8])
+    # Keeping total max hashtags to 3 or 4 clean ones
+    final_tags = " ".join(list(dict.fromkeys(tags_list))[:4])
     
     if final_tags:
         return cleaned.strip() + "\n\n" + final_tags
@@ -187,9 +184,9 @@ def process_deal(text):
         header_banner = ""
         
         if is_strict_one_rupee_deal(text):
-            header_banner = "🔥 **MEGA ₹1 STORE / 1 RUPEE DEAL!** 🔥\n━━━━━━━━━━━━━━━━━━━━━━\n"
+            header_banner = "🔥 **MEGA ₹1 STORE / 1 RUPEE DEAL!** 🔥\n━━━━━━━━━━━━━\n"
         elif check_loot_restriction_keywords(text):
-            header_banner = "🚨 **CRAZY GLITCH / LOWEST PRICE ALERT!**\n━━━━━━━━━━━━━━━━━━━━━━\n"
+            header_banner = "🚨 **CRAZY GLITCH / LOWEST PRICE ALERT!**\n━━━━━━━━━━━━━\n"
             
         final_output = header_banner + formatted_text + WATERMARK_TEXT
         return final_output
